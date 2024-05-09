@@ -134,3 +134,7 @@ class Encyclopedia:
     def get_num_types(self):
         """Return the number of types of creatures in the encyclopedia"""
         return len(self.creatures)
+    
+    def get_num_tracks(self):
+        """Return the number of tracks in the encyclopedia"""
+        return np.sum([len(track) for track in self.tracks])
