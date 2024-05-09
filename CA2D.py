@@ -67,6 +67,11 @@ class CA2D(Automaton):
         """
             Changes the rule of the automaton to the one specified by s_num and b_num
         """
+        if self.s_num + s_num_var < 0:
+            self.s_num = 0
+        if self.b_num + b_num_var < 0:
+            self.b_num = 0
+            
         self.s_num += s_num_var
         self.b_num += b_num_var
     

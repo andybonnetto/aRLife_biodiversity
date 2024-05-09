@@ -122,7 +122,7 @@ class RLEnv(gym.Env):
         p5 = 10000 if self.auto.worldmap.sum() > 0.5*self.H*self.W else 0
         p1 = 900000 if (self.auto.worldmap.sum() == 0 or self.auto.worldmap.sum() == self.H*self.W) else 0
         p4 = self.reward*0.1 if self.reward > 0 else 0
-        reward =  r3 - p4 - p1 + r5 - p5
+        reward =  r3 - p4 - p1 + r5 
         return reward
 
 def plot_reward(reward_log, save_path):
@@ -141,7 +141,7 @@ W = 400
 patch_size = 10
 # num_env = 5
 # Initialize your custom environment
-env = RLEnv(n_actions=4, H=H, W=W, patch_size=patch_size, zoom_ratio=2, max_frame = max_frame)
+env = RLEnv(n_actions=20, H=H, W=W, patch_size=patch_size, zoom_ratio=2, max_frame = max_frame)
 
 # Wrap the environment in a vectorized environment
 env = DummyVecEnv([lambda: env])
@@ -150,18 +150,18 @@ env = DummyVecEnv([lambda: env])
 model = PPO("MlpPolicy",
             env,
             verbose=1,
-            n_steps = max_frame,
-            batch_size = 10,
-            n_epochs = 40,
+            n_steps = 600,
+            batch_size = max_frame,
+            n_epochs = 100,
             learning_rate = 0.0001,
             
             )
 callback = RewardCallback()
-model.learn(total_timesteps=max_frame, callback=callback)
+# model.learn(total_timesteps=max_frame, callback=callback)
 # model.learn(total_timesteps=max_frame)
 
 # Save the trained model
-model.save(os.path.join(RL_dir, "ppo_custom_env"))
+# model.save(os.path.join(RL_dir, "ppo_custom_env"))
 # Save the reward log
 # plot_reward(callback.reward_log, os.path.join(RL_dir, "reward_log.png"))
 
