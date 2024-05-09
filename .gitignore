@@ -1,0 +1,9 @@
+.DS_Store
+Videos
+Images
+__pycache__
+*.npy
+*.pickle
+*.csv
+*.png
+*.jpg
