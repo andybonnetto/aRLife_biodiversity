@@ -76,7 +76,9 @@ class CA2D(Automaton):
         self.b_num += b_num_var
     
     def step(self):
-        # Generate tensors for all 8 neighbors
+        ''' 
+        Generate tensors for all 8 neighbors
+        ''' 
         w, e = self.world.roll(-1, 0), self.world.roll(1, 0) 
         n, s = self.world.roll(-1, 1), self.world.roll(1, 1) 
         sw, se = w.roll(1, 1), e.roll(1, 1)

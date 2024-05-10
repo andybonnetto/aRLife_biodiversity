@@ -67,7 +67,7 @@ class Encyclopedia:
             check, c_id = self._check_is_in(creature)
             if not check:  # Check whether the creature is already in the encyclopedia
                 self.creatures.append(creature)
-                self.tracks.append([[creature.x, creature.y, 0]]) #0 is the age of the track
+                self.tracks.append([[creature.x, creature.y, 0, 0]]) #0 is the age of the track
                 self.encyclopedia_page = np.concatenate(
                     [self.encyclopedia_page, creature.creature_data[np.newaxis, :, :]],
                     axis=0,
@@ -82,12 +82,12 @@ class Encyclopedia:
                     self.creatures[
                         c_id - 1
                     ].num_creat += 1  # Increment creature count only if the creature is not overlapping with existing creature
-                    self.tracks[c_id - 1].append([creature.x, creature.y, 0])
+                    self.tracks[c_id - 1].append([creature.x, creature.y, 0, 0])
                     self.creatures[c_id - 1].x = creature.x
                     self.creatures[c_id - 1].y = creature.y
                 else:
                     ind = np.where(overlaps)[0][0]
-                    self.tracks[c_id - 1][ind] = [creature.x, creature.y, 0]
+                    self.tracks[c_id - 1][ind] = [creature.x, creature.y, 0, self.tracks[c_id - 1][ind][3] + 1]
     def save(self, output_dir:str):
         # Save the encyclopedia
         np.save(os.path.join(output_dir, "encyclopedia.npy"), self.encyclopedia_page)
@@ -119,6 +119,7 @@ class Encyclopedia:
             if len(self.tracks[t]):
                 tracks = np.array(self.tracks[t])
                 tracks[:,2] += 1
+                tracks[:,3] += 1
                 tracks = tracks[np.where(tracks[:,2] <= 2)[0]]
                 self.tracks[t] = tracks.tolist()
             
@@ -138,3 +139,10 @@ class Encyclopedia:
     def get_num_tracks(self):
         """Return the number of tracks in the encyclopedia"""
         return np.sum([len(track) for track in self.tracks])
+    
+    def get_track_ages(self):
+        '''Return the cumulative ages of the tracks in the encyclopedia'''
+        if len(self.tracks):
+            return np.sum([np.sum(np.array(track)[:,3]) for track in self.tracks if len(track)])
+        else:
+            return 0

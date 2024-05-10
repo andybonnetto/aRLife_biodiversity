@@ -116,13 +116,20 @@ def phash(image, hash_size=32, lp=8):
     return hash_value
 
 
-def plot_num_creatures(num_creatures: list, output_dir: str, filename: str, title:str = "Number of creatures per frame"):
+def plot_num_creatures(
+    num_creatures: list,
+    output_dir: str,
+    filename: str,
+    title: str = "Number of creatures per frame",
+):
     """Plot the number of creatures per frame"""
     num_creatures = np.array(num_creatures)
     plt.figure(figsize=(15, 10))
     if len(num_creatures.shape) > 1:
         # Plot as image
-        plt.imshow(num_creatures.T, aspect="auto", interpolation="nearest", cmap="inferno_r")
+        plt.imshow(
+            num_creatures.T, aspect="auto", interpolation="nearest", cmap="inferno_r"
+        )
         plt.colorbar()
     else:
         plt.plot(num_creatures)
@@ -180,26 +187,44 @@ def plot_encyclopedia(pokedex: Encyclopedia, output_dir: str, filename: str):
     for i, creat in enumerate(pokedex.creatures):
         axs[i].imshow(creat.creature_data, cmap="cubehelix")
         axs[i].axis("off")
-    for k in range(i,len(axs)):
+    for k in range(i, len(axs)):
         axs[k].axis("off")
     plt.tight_layout()
     plt.savefig(os.path.join(output_dir, filename))
     plt.close()
 
-        
-def run_simulation(W, H, fps, recording, launch_vid, patch_size, max_frames, random, classify, dec_mode, b_rule, s_rule, headless):
-    
-    output_dir = os.path.join(args.output_dir, f"rule_b{b_rule}_s{s_rule}_patch{patch_size}_duration{max_frames}")
+
+def run_simulation(
+    W,
+    H,
+    fps,
+    recording,
+    launch_vid,
+    patch_size,
+    max_frames,
+    random,
+    classify,
+    dec_mode,
+    b_rule,
+    s_rule,
+    headless,
+):
+
+    output_dir = os.path.join(
+        args.output_dir,
+        f"rule_b{b_rule}_s{s_rule}_patch{patch_size}_duration{max_frames}",
+    )
     os.makedirs(output_dir, exist_ok=True)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    
+
     if not headless:
         import pygame
+
         pygame.init()
         screen = pygame.display.set_mode((W, H), flags=pygame.SCALED | pygame.RESIZABLE)
         clock = pygame.time.Clock()
-    
+
     running = True
     stopped = not headless
     camera = Camera(W, H)
@@ -271,11 +296,19 @@ def run_simulation(W, H, fps, recording, launch_vid, patch_size, max_frames, ran
                 temp = pokedex.get_num_creatures()
                 temp_div = pokedex.get_num_creatures_per_type()
                 for i, creature in enumerate(centered_creatures):
-                    c = Creature(creature, creature_pos = [loc_x[i], loc_y[i]])
+                    c = Creature(creature, creature_pos=[loc_x[i], loc_y[i]])
                     pokedex.update(c)
                 creature_num.append(pokedex.get_num_creatures() - temp)
-                creature_diversity_variation.append(pokedex.get_num_creatures_per_type() - np.pad(temp_div, (0,len(pokedex.get_num_creatures_per_type()) - len(temp_div))))
-                creature_diversity_cumulative.append(pokedex.get_num_creatures_per_type())
+                creature_diversity_variation.append(
+                    pokedex.get_num_creatures_per_type()
+                    - np.pad(
+                        temp_div,
+                        (0, len(pokedex.get_num_creatures_per_type()) - len(temp_div)),
+                    )
+                )
+                creature_diversity_cumulative.append(
+                    pokedex.get_num_creatures_per_type()
+                )
                 creature_diversity.append([len(track) for track in pokedex.tracks])
             pokedex.update_tracks()
             ws_buff = []  # Empty the buffer
@@ -303,11 +336,13 @@ def run_simulation(W, H, fps, recording, launch_vid, patch_size, max_frames, ran
                     for x, y in zip(pos_x, pos_y):
                         rect = pygame.Rect((x, y), (patch_size, patch_size))
                         pygame.draw.rect(surface, (255, 0, 0), rect, 1)
-                    
+
             if args.plot_creatures:
                 for track_creat in pokedex.tracks:
                     for track in track_creat:
-                        rect = pygame.Rect((track[0], track[1]), (patch_size, patch_size))
+                        rect = pygame.Rect(
+                            (track[0], track[1]), (patch_size, patch_size)
+                        )
                         pygame.draw.rect(surface, (255, 0, 0), rect, 1)
 
             # Draw the scaled surface on the window
@@ -337,12 +372,27 @@ def run_simulation(W, H, fps, recording, launch_vid, patch_size, max_frames, ran
         for creat, label in zip(pokedex.creatures.values(), labels):
             creat.creature_type = label
         pokedex.save_creatures(output_dir=output_dir)
-    creature_diversity_variation = np.array([np.pad(div, (0, len(creature_diversity_variation[-1]) - len(div))) for div in creature_diversity_variation])
-    creature_diversity_cumulative = np.array([np.pad(div, (0, len(creature_diversity_cumulative[-1]) - len(div))) for div in creature_diversity_cumulative])
-    creature_diversity = np.array([np.pad(div, (0, len(creature_diversity[-1]) - len(div))) for div in creature_diversity])
-    
+    creature_diversity_variation = np.array(
+        [
+            np.pad(div, (0, len(creature_diversity_variation[-1]) - len(div)))
+            for div in creature_diversity_variation
+        ]
+    )
+    creature_diversity_cumulative = np.array(
+        [
+            np.pad(div, (0, len(creature_diversity_cumulative[-1]) - len(div)))
+            for div in creature_diversity_cumulative
+        ]
+    )
+    creature_diversity = np.array(
+        [
+            np.pad(div, (0, len(creature_diversity[-1]) - len(div)))
+            for div in creature_diversity
+        ]
+    )
+
     pokedex.save(output_dir=output_dir)
-    
+
     make_all_plots(
         creature_diversity,
         creature_diversity_variation,
@@ -352,55 +402,68 @@ def run_simulation(W, H, fps, recording, launch_vid, patch_size, max_frames, ran
         pokedex_size,
         pokedex,
         frame_count,
-        output_dir
+        output_dir,
     )
-    
-def make_all_plots(creature_diversity:np.array,
-                   creature_diversity_variation:np.array,
-                   creature_diversity_cumulative:np.array,
-                   detection_num:list,
-                   creature_num:list,
-                   pokedex_size:list,
-                   pokedex:Encyclopedia,
-                   frame_count:int,
-                   output_dir:str) -> None:
-    '''Make all the plots for the simulation results'''
-    
+
+
+def make_all_plots(
+    creature_diversity: np.array,
+    creature_diversity_variation: np.array,
+    creature_diversity_cumulative: np.array,
+    detection_num: list,
+    creature_num: list,
+    pokedex_size: list,
+    pokedex: Encyclopedia,
+    frame_count: int,
+    output_dir: str,
+) -> None:
+    """Make all the plots for the simulation results"""
+
     plot_num_creatures(
         creature_diversity,
         output_dir=output_dir,
         filename="creature_diversity.png",
-        title = "Creature diversity per frame"
+        title="Creature diversity per frame",
     )
-    
+
     plot_num_creatures(
         creature_diversity_variation,
         output_dir=output_dir,
         filename="creature_diversity_variation.png",
-        title = "Creature diversity variation per frame"
+        title="Creature diversity variation per frame",
     )
     plot_num_creatures(
         creature_diversity_cumulative,
         output_dir=output_dir,
         filename="diversity_per_frame.png",
-        title = "Diversity per frame"
+        title="Diversity per frame",
     )
     plot_num_creatures(
-        detection_num, output_dir=output_dir, filename="num_detections.png", title = "Number of detections per frame"
+        detection_num,
+        output_dir=output_dir,
+        filename="num_detections.png",
+        title="Number of detections per frame",
     )
     plot_num_creatures(
-        creature_num, output_dir=output_dir, filename="num_creatures.png", title = "Number of creatures per frame"
+        creature_num,
+        output_dir=output_dir,
+        filename="num_creatures.png",
+        title="Number of creatures per frame",
     )
     plot_num_creatures(
-        pokedex_size, output_dir=output_dir, filename="num_creatures_pokedex.png", title = "Encyclopdia size per frame"
+        pokedex_size,
+        output_dir=output_dir,
+        filename="num_creatures_pokedex.png",
+        title="Encyclopdia size per frame",
     )
     plot_encyclopedia(pokedex, output_dir=output_dir, filename="encyclopedia.png")
-    
-    print("Simulation duration (frames): ", frame_count)
-    print("Max number of tracks", np.max(np.sum(creature_diversity, axis = 0)))
-    print("Max number of creature_types", np.max(np.sum(creature_diversity > 0, axis = 0)))
-    print("Number of discovered creatures", pokedex.get_num_types())
 
+    print("Simulation duration (frames): ", frame_count)
+    print("Max number of tracks", np.max(np.sum(creature_diversity, axis=0)))
+    print(
+        "Max number of creature_types", np.max(np.sum(creature_diversity > 0, axis=0))
+    )
+    print("Number of discovered creatures", pokedex.get_num_types())
 
 
 def parse_args():
@@ -438,10 +501,14 @@ def parse_args():
         "--classify", action="store_true", help="classify the creatures"
     )
     parser.add_argument(
-        "--plot_detection", action="store_true", help="Plot the detection during simulation"
+        "--plot_detection",
+        action="store_true",
+        help="Plot the detection during simulation",
     )
     parser.add_argument(
-        "--plot_creatures", action="store_true", help="Plot the detection during simulation"
+        "--plot_creatures",
+        action="store_true",
+        help="Plot the detection during simulation",
     )
     parser.add_argument(
         "--dec_mode",
@@ -486,5 +553,19 @@ if __name__ == "__main__":
     b_rule = args.b_rule
     s_rule = args.s_rule
     headless = args.headless
-    
-    run_simulation(W, H, fps, recording, launch_vid, patch_size, max_frames, random, classify, dec_mode, b_rule, s_rule, headless)
+
+    run_simulation(
+        W,
+        H,
+        fps,
+        recording,
+        launch_vid,
+        patch_size,
+        max_frames,
+        random,
+        classify,
+        dec_mode,
+        b_rule,
+        s_rule,
+        headless,
+    )
