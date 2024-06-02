@@ -1,5 +1,6 @@
 from Automaton import Automaton
 import torch, pygame
+import numpy as np
 
 class CA2D(Automaton):
 
@@ -63,17 +64,21 @@ class CA2D(Automaton):
         self.b_num = b_num
         self.reset()
     
+    def set_rule(self, s_num:int, b_num:int):
+        '''
+            Changes the rule of the automaton without reset
+        '''
+        self.s_num = s_num
+        self.b_num = b_num
+    
     def increment_rules(self,s_num_var : int, b_num_var : int):
         """
             Changes the rule of the automaton to the one specified by s_num and b_num
         """
-        if self.s_num + s_num_var < 0:
-            self.s_num = 0
-        if self.b_num + b_num_var < 0:
-            self.b_num = 0
-            
         self.s_num += s_num_var
         self.b_num += b_num_var
+        self.s_num = np.clip(self.s_num, 0,255)
+        self.b_num = np.clip(self.b_num, 0,255)
     
     def step(self):
         ''' 

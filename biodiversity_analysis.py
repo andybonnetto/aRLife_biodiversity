@@ -76,7 +76,6 @@ def creature_search(
             if i == 0 or i == patch_size - 1 or j == 0 or j == patch_size - 1
         ]
     )
-
     cond_1 = (
         np.sum(
             world_state[:, border_indices[:, 0], border_indices[:, 1]].numpy(), axis=1
